@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { UserRole } from 'src/user-old/user.entity';
 const prisma = new PrismaClient();
 async function main() {
   const admin = await prisma.user.upsert({
@@ -6,7 +7,9 @@ async function main() {
     update: {},
     create: {
       email: 'admin@gmail.com',
-      role: 'ADMIN',
+      name: "Felipe",
+      role: UserRole.ADMIN,
+      phone: "551199999999"
     },
   });
   console.log(admin);

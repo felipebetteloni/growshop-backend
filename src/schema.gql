@@ -2,14 +2,61 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Banner {
+  clickCount: Int
+  createdAt: Timestamp!
+  id: String!
+  imgUrl: String
+  isActive: Boolean
+  link: String
+  sorting: Int
+  text: String
+  title: String!
+  viewCount: Int
+}
+
+input BannerCreateInput {
+  imgUrl: String
+  link: String
+  sorting: Int
+  text: String
+  title: String!
+}
+
+type Mutation {
+  createBanner(data: BannerCreateInput!): Banner!
+  incrementClickCount(id: String!): Banner!
+  incrementViewCount(id: String!): Banner!
+  resorting(data: ResortingInput!): [Banner!]!
+  toggleActiveBanner(id: String!): Banner
+}
+
 type Query {
+  active_banners: [Banner!]!
+  banners: [Banner!]!
+  findById(id: String!): Banner
   users: [User!]!
 }
 
+input ResortingInput {
+  id: String!
+  newPosition: Int!
+}
+
+"""
+`Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
+"""
+scalar Timestamp
+
 type User {
+  created_at: Timestamp!
   email: String!
-  id: Int!
-  role: UserRole!
+  favorites: [String!]!
+  id: String!
+  is_premium: String!
+  phone: String!
+  roles: UserRole!
+  updated_at: Timestamp!
 }
 
 enum UserRole {

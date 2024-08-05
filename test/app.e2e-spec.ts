@@ -2,7 +2,7 @@ import request from 'supertest';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import { UserService } from '../src/user/user.service';
+import { UserService } from '../src/user-old/user.service';
 import { PrismaClient } from '@prisma/client';
 
 describe('App (e2e)', () => {

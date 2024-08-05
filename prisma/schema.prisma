@@ -3,6 +3,13 @@ generator client {
   binaryTargets = ["native", "linux-arm64-openssl-1.0.x"]
 }
 
+generator nestgraphql {
+    provider = "node node_modules/prisma-nestjs-graphql"
+    // for yarn monorepos
+    // provider = "prisma-nestjs-graphql"
+    output = "../src/@generated"
+}
+
 // generator erd {
 //   provider = "prisma-erd-generator"
 //   output = "../docs/ERD.svg"
@@ -14,10 +21,328 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  role      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(cuid()) @map("id")
+  email         String         @unique @map("email")
+  name          String?        @map("name")
+  role          String         @default("USER") @map("role")
+  phone         String?        @map("phone")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  isPremium     Boolean        @default(false) @map("is_premium")
+  isStore       Boolean        @default(false) @map("is_store")
+  products      Product[]
+  favorites     Favorite[]
+  comments      Comment[]
+  replies       Reply[]
+  messages      Message[]
+  reviews       Review[]
+  reports       Report[]
+  chatsFrom     Chat[]         @relation("user_from")
+  chatsTo       Chat[]         @relation("user_to")
+  notifications Notification[]
+  shares        Share[]
+  subscriptions Subscription[]
+
+  @@map("users")
+}
+
+model Product {
+  id              String         @id @default(cuid()) @map("id")
+  user            User           @relation(fields: [userId], references: [id])
+  userId          String         @map("user_id")
+  category        Category       @relation(fields: [categoryId], references: [id])
+  categoryId      String         @map("category_id")
+  sub_category    SubCategory    @relation(fields: [sub_categoryId], references: [id])
+  sub_categoryId  String         @map("sub_category_id")
+  brand           Brand          @relation(fields: [brandId], references: [id])
+  brandId         String         @map("brand_id")
+  name            String         @map("name")
+  description     String         @map("description")
+  condition       Condition      @relation(fields: [conditionId], references: [id])
+  conditionId     String         @map("condition_id")
+  price           Float          @map("price")
+  country         Country?       @relation(fields: [countryId], references: [id])
+  countryId       String?        @default("BR") @map("country_id")
+  state           State?         @relation(fields: [stateId], references: [id])
+  stateId         String?        @map("state_id")
+  city            City?          @relation(fields: [cityId], references: [id])
+  cityId          String?        @map("city_id")
+  neighbourhood   Neighbourhood? @relation(fields: [neighbourhoodId], references: [id])
+  neighbourhoodId String?        @map("neighbourhood_id")
+  zip_code        String?        @map("zip_code")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  approvedAt      DateTime?      @map("approved_at")
+  updatedAt       DateTime?      @updatedAt @map("updated_at")
+  isActive        Boolean        @default(true) @map("is_active")
+  isPromoted      Boolean        @default(false) @map("is_promoted")
+  viewCount       Int?           @default(0) @map("view_count")
+  favorites       Favorite[]
+  comments        Comment[]
+  img_urls        ProductImg[]
+  report          Report?
+  shares          Share[]
+
+  @@map("products")
+}
+
+model ProductImg {
+  id        String   @id @default(cuid()) @map("id")
+  imgUrl    String   @map("img_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String   @map("productId")
+
+  @@map("product_images")
+}
+
+model Category {
+  id          String        @id @default(cuid()) @map("id")
+  name        String        @map("name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  Product     Product[]
+  SubCategory SubCategory[]
+
+  @@map("categories")
+}
+
+model SubCategory {
+  id         String    @id @default(cuid()) @map("id")
+  name       String    @map("name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  category   Category  @relation(fields: [categoryId], references: [id])
+  categoryId String    @map("categoryId")
+  Product    Product[]
+
+  @@map("sub_categories")
+}
+
+model Brand {
+  id       String    @id @default(cuid()) @map("id")
+  name     String    @map("name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  products Product[]
+
+  @@map("brands")
+}
+
+model Condition {
+  id       String    @id @default(cuid()) @map("id")
+  name     String    @map("name")
+  products Product[]
+
+  @@map("conditions")
+}
+
+model Country {
+  id       String    @id @default(cuid()) @map("id")
+  name     String    @map("name")
+  states   State[]
+  products Product[]
+
+  @@map("countries")
+}
+
+model State {
+  id        String    @id @default(cuid()) @map("id")
+  name      String    @map("name")
+  country   Country   @relation(fields: [countryId], references: [id])
+  countryId String    @map("country_id")
+  cities    City[]
+  products  Product[]
+
+  @@map("states")
+}
+
+model City {
+  id            String          @id @default(cuid()) @map("id")
+  name          String          @map("name")
+  state         State           @relation(fields: [stateId], references: [id])
+  stateId       String          @map("state_id")
+  neighbourhood Neighbourhood[]
+  products      Product[]
+
+  @@map("cities")
+}
+
+model Neighbourhood {
+  id       String    @id @default(cuid()) @map("id")
+  name     String    @map("name")
+  city     City      @relation(fields: [cityId], references: [id])
+  cityId   String    @map("city_id")
+  products Product[]
+
+  @@map("neighbourhoods")
+}
+
+model Favorite {
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @map("user_id")
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @map("product_id")
+
+  @@id([userId, productId])
+  @@map("favorites")
+}
+
+model Report {
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @map("user_id")
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @unique @map("product_id")
+  text      String  @map("text")
+
+  @@id([userId, productId])
+  @@map("reports")
+}
+
+model Share {
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @map("user_id")
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @map("product_id")
+
+  @@id([userId, productId])
+  @@map("shares")
+}
+
+model Comment {
+  id        String   @id @default(cuid()) @map("id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String   @map("product_id")
+  text      String   @map("text")
+  createdAt DateTime @default(now()) @map("created_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  replies   Reply[]
+
+  @@map("comments")
+}
+
+model Reply {
+  id        String   @id @default(cuid()) @map("id")
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  commentId String   @map("comment_id")
+  reply     Reply?   @relation("parentReply", fields: [replyId], references: [id])
+  replyId   String?  @map("reply_id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  text      String   @map("text")
+  createdAt DateTime @default(now()) @map("created_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  replies   Reply[]  @relation("parentReply")
+
+  @@map("replies")
+}
+
+model Chat {
+  id         String    @id @default(cuid()) @map("id")
+  userFrom   User      @relation("user_from", fields: [userFromId], references: [id])
+  userFromId String    @map("user_from_id")
+  userTo     User      @relation("user_to", fields: [userToId], references: [id])
+  userToId   String    @map("user_to_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  isActive   Boolean   @default(true) @map("is_active")
+  messages   Message[]
+  review     Review?
+
+  @@map("chats")
+}
+
+model Message {
+  id        String   @id @default(cuid()) @map("id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  chatId    String   @map("chat_id")
+  text      String   @map("text")
+  imgUrl    String?  @map("img_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  isRead    Boolean  @default(false) @map("is_read")
+
+  @@map("messages")
+}
+
+model Review {
+  id        String      @id @default(cuid()) @map("id")
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String      @map("user_id")
+  text      String      @map("text")
+  createdAt DateTime    @default(now()) @map("created_at")
+  chat      Chat        @relation(fields: [chatId], references: [id])
+  chatId    String      @unique @map("chat_id")
+  imgUrls   ReviewImg[]
+
+  @@map("reviews")
+}
+
+model ReviewImg {
+  id        String   @id @default(cuid()) @map("id")
+  imgUrl    String   @map("img_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  review    Review   @relation(fields: [reviewId], references: [id])
+  reviewId  String   @map("review_id")
+
+  @@map("review_images")
+}
+
+model Banner {
+  id         String   @id @default(cuid()) @map("id")
+  title      String   @map("title")
+  text       String   @map("text")
+  imgUrl     String?  @map("img_url")
+  link       String?  @map("link")
+  createdAt  DateTime @default(now()) @map("created_at")
+  isActive   Boolean  @default(true) @map("is_active")
+  sorting    Int      @default(0) @map("sorting")
+  viewCount  Int?     @default(0) @map("view_count")
+  clickCount Int?     @default(0) @map("click_count")
+
+  @@unique(name: "activeSorting", [isActive, sorting])
+  @@map("banners")
+}
+
+model Notification {
+  id        String   @id @default(cuid()) @map("id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  text      String   @map("text")
+  imgUrl    String?  @map("img_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  isRead    Boolean  @default(false) @map("is_read")
+
+  @@map("notifications")
+}
+
+enum SubscriptionType {
+  NORMAL
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+model Subscription {
+  id        String           @id @default(cuid()) @map("id")
+  user      User             @relation(fields: [userId], references: [id])
+  userId    String           @map("user_id")
+  createdAt DateTime         @default(now()) @map("created_at")
+  endAt     DateTime?        @map("end_at")
+  isActive  Boolean          @default(true) @map("is_active")
+  type      SubscriptionType @default(NORMAL) @map("type")
+
+  @@map("subscriptions")
+}
+
+model GlobalSettings {
+  id          String   @id @map("id")
+  description String?  @map("description")
+  value       String   @map("value")
+  createdAt   DateTime @default(now()) @map("created_at")
+  isActive    Boolean  @default(true) @map("is_active")
+
+  @@map("global_settings")
 }

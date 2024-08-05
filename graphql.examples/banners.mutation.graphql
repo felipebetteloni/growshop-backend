@@ -1,0 +1,6 @@
+mutation ToggleActiveBanner($id: String!) {
+    toggleActiveBanner(id: $id) {
+        id
+        isActive
+    }
+}
