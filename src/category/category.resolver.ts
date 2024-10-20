@@ -1,19 +1,25 @@
-import { Logger } from '@nestjs/common';
+import { CategoryService } from "src/category/category.service";
 import {
-  Args,
-  Mutation,
-  Query,
-  Resolver,
-} from '@nestjs/graphql';
-import { Category } from './category.entity';
-import { CategoryService } from './category.service';
-import { FindFirstCategoryArgs } from './graphql';
-import { AffectedRows } from 'src/common/prisma';
+  Category,
+  FindFirstCategoryArgs,
+  FindUniqueCategoryArgs,
+  FindManyCategoryArgs,
+  CategoryGroupBy,
+  CategoryGroupByArgs,
+  AggregateCategory,
+  CategoryAggregateArgs,
+  CreateOneCategoryArgs,
+  CreateManyCategoryArgs,
+  UpdateOneCategoryArgs,
+  UpdateManyCategoryArgs,
+  DeleteOneCategoryArgs,
+  DeleteManyCategoryArgs,
+} from 'src/@graphql';
+import { AffectedRows } from "src/common/prisma/affected-rows.output";
+import { Resolver, Query, Args, Mutation } from "@nestjs/graphql";
 
 @Resolver(() => Category)
 export class CategoryResolver {
-  private readonly logger = new Logger(CategoryResolver.name);
-
   constructor(private readonly categoryService: CategoryService) {}
 
   @Query(() => Category, { nullable: false })
@@ -23,6 +29,7 @@ export class CategoryResolver {
 
   @Query(() => Category, { nullable: false })
   findUniqueCategory(@Args() args: FindUniqueCategoryArgs) {
+    console.log('args >>>', args);
     return this.categoryService.findUnique(args);
   }
 

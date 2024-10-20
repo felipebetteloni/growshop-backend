@@ -1,140 +1,79 @@
-import { Logger } from '@nestjs/common';
+import { BannerService } from "src/banner/banner.service";
 import {
-  Args,
-  Context,
-  Field,
-  InputType,
-  Int,
-  Mutation,
-  Query,
-  registerEnumType,
-  Resolver,
-} from '@nestjs/graphql';
-import { Banner } from './banner.entity';
-import { BannerService } from './banner.service';
-import { SortOrder } from 'src/common/SortOrder';
-
-@InputType()
-export class BannerCreateInput {
-  @Field()
-  title: string;
-
-  @Field({ nullable: true })
-  text: string;
-
-  @Field((type) => String, { nullable: true })
-  imgUrl?: string;
-
-  @Field((type) => String, { nullable: true })
-  link?: string;
-
-  @Field((type) => Int, { nullable: true })
-  sorting?: number;
-}
-
-@InputType()
-export class ResortingInput {
-  @Field()
-  id: string;
-
-  @Field((type) => Int)
-  newPosition: number;
-}
-
-@InputType()
-class BannerOrderByUpdatedAtInput {
-  @Field((type) => SortOrder)
-  updatedAt: SortOrder
-}
-
-registerEnumType(SortOrder, {
-  name: 'SortOrder',
-})
+  Banner,
+  FindFirstBannerArgs,
+  FindUniqueBannerArgs,
+  FindManyBannerArgs,
+  BannerGroupBy,
+  BannerGroupByArgs,
+  AggregateBanner,
+  BannerAggregateArgs,
+  CreateOneBannerArgs,
+  CreateManyBannerArgs,
+  UpdateOneBannerArgs,
+  UpdateManyBannerArgs,
+  DeleteOneBannerArgs,
+  DeleteManyBannerArgs,
+} from 'src/@graphql';
+import { AffectedRows } from "src/common/prisma/affected-rows.output";
+import { Resolver, Query, Args, Mutation } from "@nestjs/graphql";
 
 @Resolver(() => Banner)
 export class BannerResolver {
-  private readonly logger = new Logger(BannerResolver.name);
-
   constructor(private readonly bannerService: BannerService) {}
 
-  @Query(() => [Banner], { name: 'banners' })
-  async findAll() {
-    return this.bannerService.findAll();
+  @Query(() => Banner, { nullable: false })
+  findFirstBanner(@Args() args: FindFirstBannerArgs) {
+    this.bannerService.findFirst(args);
   }
 
-  @Query(() => [Banner], { name: 'active_banners' })
-  async findAllActive() {
-    return this.bannerService.findAllActive();
+  @Query(() => Banner, { nullable: false })
+  findUniqueBanner(@Args() args: FindUniqueBannerArgs) {
+    return this.bannerService.findUnique(args);
   }
 
-  @Query((returns) => Banner, { nullable: true })
-  async findById(@Args('id') id: string) {
-    return this.bannerService.findById({id: id});
+  @Query(() => [Banner], { nullable: false })
+  listBanners(@Args() args: FindManyBannerArgs) {
+    return this.bannerService.findMany(args);
   }
 
-  /*
-  @Query((returns) => [Banner])
-  async find(
-    @Args('searchString', { nullable: true }) searchString: string,
-    @Args('skip', { nullable: true }) skip: number,
-    @Args('take', { nullable: true }) take: number,
-    @Args('orderBy', { nullable: true }) orderBy: BannerOrderByUpdatedAtInput,
-    @Context() ctx,
-  ) {
-    const or = searchString
-      ? {
-          OR: [
-            { title: { contains: searchString } },
-            { content: { contains: searchString } },
-          ],
-        }
-      : {}
-
-    return this.prismaService.post.findMany({
-      where: {
-        published: true,
-        ...or,
-      },
-      take: take || undefined,
-      skip: skip || undefined,
-      orderBy: orderBy || undefined,
-    })
-  }
-  */
-
-  @Mutation((returns) => Banner)
-  async createBanner(
-    @Args('data') data: BannerCreateInput,
-    @Context() ctx,
-  ): Promise<Banner> {
-    return this.bannerService.create(data);
-  }
-  
-  @Mutation((returns) => Banner)
-  async createBanner(
-    @Args('data') data: BannerCreateInput,
-    @Context() ctx,
-  ): Promise<Banner> {
-    return this.bannerService.create(data);
+  @Query(() => [BannerGroupBy], { nullable: false })
+  groupByBanner(@Args() args: BannerGroupByArgs) {
+    return this.bannerService.groupBy(args);
   }
 
-  @Mutation((returns) => Banner, { nullable: true })
-  async toggleActiveBanner(@Args('id') id: string): Promise<Banner | null> {
-    return this.bannerService.toggleActiveBanner(id);
+  @Query(() => AggregateBanner, { nullable: false })
+  aggregateBanner(@Args() args: BannerAggregateArgs) {
+    return this.bannerService.aggregate(args);
   }
 
-  @Mutation((returns) => Banner)
-  async incrementViewCount(@Args('id') id: string): Promise<Banner> {
-    return this.bannerService.incrementViewCount(id);
+  @Mutation(() => Banner, { nullable: true })
+  createBanner(@Args() args: CreateOneBannerArgs) {
+    return this.bannerService.create(args);
   }
 
-  @Mutation((returns) => Banner)
-  async incrementClickCount(@Args('id') id: string): Promise<Banner> {
-    return this.bannerService.incrementClickCount(id);
+  @Mutation(() => AffectedRows, { nullable: true })
+  createManyBanner(@Args() args: CreateManyBannerArgs) {
+    return this.bannerService.createMany(args);
   }
 
-  @Mutation((returns) => [Banner])
-  async resorting(@Args('data') data: ResortingInput): Promise<Banner[]> {
-    return this.bannerService.resorting(data.id, data.newPosition);
+  @Mutation(() => Banner, { nullable: true })
+  updateBanner(@Args() args: UpdateOneBannerArgs) {
+    return this.bannerService.update(args);
+  }
+
+  @Mutation(() => AffectedRows, { nullable: true })
+  updateManyBanner(@Args() args: UpdateManyBannerArgs) {
+    return this.bannerService.updateMany(args);
+  }
+
+  @Mutation(() => Banner, { nullable: true })
+  deleteBanner(@Args() args: DeleteOneBannerArgs) {
+    return this.bannerService.delete(args);
+  }
+
+  @Mutation(() => AffectedRows, { nullable: true })
+  deleteManyBanner(@Args() args: DeleteManyBannerArgs) {
+    return this.bannerService.deleteMany(args);
   }
 }

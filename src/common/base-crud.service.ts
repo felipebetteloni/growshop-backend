@@ -32,7 +32,7 @@ export class BaseCrudService<
     }
   }
 
-  findUnique(args: FindUniqueArg): Promise<T | null> {
+  findUnique(args: FindUniqueArg): Promise<T | null> {   
     return this.prisma[this.modelName].findUnique(args);
   }
 
@@ -50,6 +50,8 @@ export class BaseCrudService<
   
 
   create(args: CreateArg): Promise<T> {
+    console.log(this.modelName);
+    console.log(this.prisma[this.modelName])
     return this.prisma[this.modelName].create(args);
   }
 
@@ -59,6 +61,7 @@ export class BaseCrudService<
 
 
   update(args: UpdateArg): Promise<T> {
+    console.log(args);
     return this.prisma[this.modelName].update(args);
   }
 
@@ -76,7 +79,13 @@ export class BaseCrudService<
     return this.prisma[this.modelName].deleteMany(args);
   }
 
+  includeCount() {
+    return {
+      _count: true
+    }
+  }
+
   private getModelName(): string {
-    return this.constructor.name.replace('Service', '').toLowerCase();
+    return this.constructor.name.replace('Service', '');
   }
 }

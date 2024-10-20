@@ -4,10 +4,14 @@ generator client {
 }
 
 generator nestgraphql {
-    provider = "node node_modules/prisma-nestjs-graphql"
-    // for yarn monorepos
-    // provider = "prisma-nestjs-graphql"
-    output = "../src/@generated"
+  provider               = "node node_modules/prisma-nestjs-graphql"
+  // for yarn monorepos
+  // provider = "prisma-nestjs-graphql"
+  output                 = "../src/@graphql"
+  reExport               = All
+  purgeOutput            = true
+  fields_Validator_from  = "class-validator"
+  fields_Validator_input = true
 }
 
 // generator erd {
@@ -98,8 +102,8 @@ model ProductImg {
 model Category {
   id          String        @id @default(cuid()) @map("id")
   name        String        @map("name")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime?     @updatedAt @map("updated_at")
   Product     Product[]
   SubCategory SubCategory[]
 
@@ -109,8 +113,8 @@ model Category {
 model SubCategory {
   id         String    @id @default(cuid()) @map("id")
   name       String    @map("name")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
   category   Category  @relation(fields: [categoryId], references: [id])
   categoryId String    @map("categoryId")
   Product    Product[]
@@ -119,11 +123,11 @@ model SubCategory {
 }
 
 model Brand {
-  id       String    @id @default(cuid()) @map("id")
-  name     String    @map("name")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime?      @updatedAt @map("updated_at")
-  products Product[]
+  id        String    @id @default(cuid()) @map("id")
+  name      String    @map("name")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  products  Product[]
 
   @@map("brands")
 }

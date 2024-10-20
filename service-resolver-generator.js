@@ -30,6 +30,49 @@ function firstLetterToLowerCase(inputString) {
   return inputString.charAt(0).toLowerCase() + inputString.slice(1);
 }
 
+function generateClassName(str) {
+  const fileNames = str.split('.');
+
+  if (fileNames[0] === "index") 
+    return;
+
+  const n = ["args", "input", "enum"];
+  const e = fileNames[1]?.toLowerCase();
+
+  if (n.includes(e)) {
+    fileNames.splice(2, 1);
+
+    if (e === "input" && fileNames[0].indexOf("filter") > 0) {
+      fileNames.splice(1, 1);
+    }
+
+    return capitalizeWords(fileNames.join('-'))
+  } else {
+    return capitalizeWords(fileNames[0])
+  }
+}
+
+// Generate indexes
+console.log('=========indexes=====');
+
+for (let folder of childFolders) {
+  const graphqlFolderPath = path.join(parentFolderPath, `${folder}/graphql`)
+  const files = fs.readdirSync(graphqlFolderPath);
+  let typescriptCode = ``;
+
+  for (let file of files) {
+    const className = generateClassName(file);
+    if (className)
+      typescriptCode = typescriptCode + `export { ${className} } from './${file.substring(0, file.length - 3)}';`;
+  }
+
+  const formattedCode = prettier.format(typescriptCode, {
+    parser: 'typescript',
+  });
+
+  fs.writeFileSync(`./src/${folder}/graphql/index.ts`, formattedCode);
+}
+
 // Generate services
 console.log('=========Services=====');
 
@@ -40,7 +83,6 @@ for (let folder of childFolders) {
   const typescriptCode = `
     import { Injectable } from '@nestjs/common';
     import { PrismaService } from '../prisma/prisma.service';
-    import { Category } from './category.entity';
     import { ${serviceName}, Prisma } from "@prisma/client";
     import { BaseCrudService } from 'src/common/base-crud.service';
 
@@ -95,11 +137,10 @@ for (let folder of childFolders) {
          UpdateMany${serviceName}Args,
          DeleteOne${serviceName}Args,
          DeleteMany${serviceName}Args,
-       } from "../prismagraphql/${folder}";
-       import { AffectedRows } from 'src/common/prisma';
+       } from "./graphql";
+       import { AffectedRows } from "src/common/prisma/affected-rows.output";
        import { Resolver, Query, Args, Mutation } from "@nestjs/graphql";
 
-       @UseGuards(GqlJWTGuard, RolesGuard)
        @Resolver(() => ${serviceName})
        export class ${serviceName}Resolver {
          constructor(private readonly ${service}Service: ${serviceName}Service) {}
@@ -196,5 +237,6 @@ for (let folder of childFolders) {
     parser: 'typescript',
   });
 
+  console.log(`import { ${serviceName}Module } from './${folder}/${folder}.module.ts';`);
   fs.writeFileSync(`./src/${folder}/${folder}.module.ts`, formattedCode);
 }
